@@ -1,0 +1,58 @@
+name: atoms-demo
+services:
+  app:
+    image: atoms-demo:${ATOMS_RELEASE:?Set ATOMS_RELEASE}
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    env_file:
+      - /opt/atoms-demo/shared/runtime.env
+    environment:
+      ATOMS_DB_PATH: /app/data/atoms.sqlite
+      TRUST_PROXY: 'true'
+    volumes:
+      - atoms-data:/app/data
+    restart: unless-stopped
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 1g
+    cpus: 1.5
+    pids_limit: 128
+    logging:
+      driver: json-file
+      options: { max-size: '10m', max-file: '3' }
+    networks: [atoms]
+  gateway:
+    image: nginx:alpine
+    user: '101:101'
+    ports:
+      - '127.0.0.1:3100:8080'
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./proxy.conf:/etc/nginx/atoms-proxy.conf:ro
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx:size=32m
+      - /var/run:size=2m
+      - /tmp:size=16m,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 96m
+    cpus: 0.25
+    pids_limit: 64
+    logging:
+      driver: json-file
+      options: { max-size: '10m', max-file: '3' }
+    networks: [atoms]
+networks:
+  atoms:
+volumes:
+  atoms-data:

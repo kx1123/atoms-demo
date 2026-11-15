@@ -1,0 +1,13 @@
+node_modules/
+.next/
+.env*
+!.env.example
+data/
+*.tsbuildinfo
+artifacts/
+**/runtime.env
+**/*.env
+!**/*.env.example
+*.pem
+*.key
+方案.md
