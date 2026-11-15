@@ -13,7 +13,7 @@ ATOMS_RELEASE=YOUR_RELEASE docker compose -p atoms-demo -f deploy/compose.yml bu
 ATOMS_RELEASE=YOUR_RELEASE docker compose -p atoms-demo -f deploy/compose.yml up -d --wait
 ```
 
-网关仅映射到宿主机 `127.0.0.1:3100`。由宿主机边缘代理添加独立虚拟主机并转发，保留 Host、覆盖 X-Real-IP、关闭代理缓冲，读超时至少 150 秒。若需要 HTTPS，使用该虚拟主机独立的证书与 HTTP 验证目录；不能替换现有站点的配置或证书。
+网关仅映射到宿主机 `127.0.0.1:3100`。由宿主机边缘代理添加独立虚拟主机并转发，保留 Host、覆盖 X-Real-IP、关闭代理缓冲，读超时至少 660 秒。若需要 HTTPS，使用该虚拟主机独立的证书与 HTTP 验证目录；不能替换现有站点的配置或证书。
 
 网关以 `nginx.conf` 中 `set_real_ip_from` 指定的宿主入口为可信来源。首次部署后用 `docker network inspect atoms-demo_atoms` 核对 gateway 地址；如果网络重建后地址变化，更新此条再部署。不要把 app 的 3000 端口直接暴露到公网。
 
@@ -36,3 +36,5 @@ ATOMS_RELEASE=PREVIOUS_RELEASE docker compose -p atoms-demo -f /path/to/previous
 停止服务使用当前 Compose 的 `down`，保留数据卷、env、release 和镜像。不要添加 `-v`。如需撤下公网入口，仅移除本项目新增的虚拟主机文件，配置检查通过后平滑 reload。
 
 真实 env、TLS 私钥、数据库及验收 artifacts 均不应提交 Git。上传包使用源码白名单，构建时 `.dockerignore` 再次排除真实配置；镜像只在运行时读取 env。
+
+模型调用默认每次最多等待 300 秒，连续 90 秒没有有效输出则停止；生成与自动修复分别计时。可用 `MODEL_TIMEOUT_MS` 和 `MODEL_IDLE_TIMEOUT_MS` 调整。服务商支持时，设置 `MODEL_THINKING=disabled` 可关闭额外思考开销；不支持该参数的服务商应留空。模型、地址和认证令牌仍完全由 env 提供。

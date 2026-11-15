@@ -26,9 +26,12 @@ MODEL_BASE_URL=https://你的服务商/v1
 MODEL_API_KEY=你的密钥
 MODEL_NAME=模型名称
 MODEL_DAILY_LIMIT=30
+MODEL_TIMEOUT_MS=300000
+MODEL_IDLE_TIMEOUT_MS=90000
+# 服务商支持时可设置 MODEL_THINKING=disabled
 ```
 
-接口需兼容 Chat Completions：接收 `model`、`messages`、`stream:false`、`max_tokens`，返回 `choices[0].message.content`。服务端会自动补上 `/chat/completions`，也允许填写完整端点。支持 HTTPS 服务及本机 HTTP 模型。
+接口需兼容 Chat Completions：接收 `model`、`messages`、`stream:true`（兼容服务商返回完整 JSON 的情况）、`max_tokens`，返回 `choices[0].message.content`。服务端会自动补上 `/chat/completions`，也允许填写完整端点。支持 HTTPS 服务及本机 HTTP 模型。
 
 密钥仅由服务端读取，不写入项目代码或预览页面。界面的“已配置”仅代表三个配置项齐全，首次生成才会验证实际连通性。没有凭证时可以打开明确标注的交互示例；示例不是模型生成，不会伪装成 AI 成功。
 
@@ -72,3 +75,5 @@ node scripts/smoke.mjs
 代码下载包含当前已知的应用数据快照，可离线打开并交互，但独立文件刷新后的修改不会持久化。生成内容的静态检查和“预览已加载”状态，不代表功能语义已由浏览器测试通过。
 
 交付说明见 [笔试提交说明](docs/笔试提交说明.md)，部署方法见 [Docker 部署](deploy/README.md)。
+
+模型调用按每次请求设置独立的总超时和有效内容空闲超时，自动修复拥有独立计时。流式响应会显示实际等待时长和接收字符数；不会展示模型的内部思考文本。部分服务商忽略流式参数时仍兼容完整 JSON 返回。
